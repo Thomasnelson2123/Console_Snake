@@ -133,7 +133,8 @@ namespace Snake
             {        
                 if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
                 {
-                    break;
+                    Console.Clear();
+                    return;
                 }
                 // initial print of the game
                 PrintGame(snake, apple, row);
@@ -142,17 +143,20 @@ namespace Snake
                 watch.Start();
                 while (!Console.KeyAvailable)
                 {
-                    if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
-                    {
-                        break;
-                    }
 
                     if (watch.ElapsedMilliseconds == speed)
                     {
                         Console.Clear(); // clears the console
-                        PrintGame(snake, apple, row); // draws the walls, apple, and snake
                         CurrentDirection = MoveSnake(snake, key, CurrentDirection); // moves the snake, and returns the current direction
                                                                                     // if the snake hits an apple, eats it, and spawns a new one
+                        PrintGame(snake, apple, row); // draws the walls, apple, and snake
+
+                        if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
+                        {
+                            Console.Clear();
+                            return;
+                        }
+
                         if (DetectAppleCollision(apple, snake))
                         {
                             snake = EatApple(snake, apple);
@@ -181,7 +185,7 @@ namespace Snake
         static bool DetectWallCollision(List<Block> snake)
         {
  
-            if (snake[0].GetY() == 0 || snake[0].GetY() >= BoardY || snake[0].GetX() == 0 || snake[0].GetX() >= BoardX)
+            if (snake[0].GetY() == 0 || snake[0].GetY() >= BoardY - 1 || snake[0].GetX() == 0 || snake[0].GetX() >= BoardX - 1)
             {
                 return true;
             }
@@ -465,7 +469,8 @@ namespace Snake
             {
                 Console.Write(Boarder);
             }
-            Console.WriteLine("\nScore: " + snake.Count);
+            Console.WriteLine("\nScore: " + (snake.Count - 3));
+            Console.WriteLine("Y value: " + snake[0].GetY());
         } 
     }
 }
