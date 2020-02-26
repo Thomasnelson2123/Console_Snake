@@ -14,7 +14,7 @@ namespace Snake
 
         // following four constants are used for drawing the game
 
-        const char Boarder = '░'; 
+        const char Border = '░'; 
         const char Player = '█';
         const char PlayerHead = '☻';
         const char Apple = '*';
@@ -29,7 +29,7 @@ namespace Snake
         {
 
             Random rand = new Random();
-            Block apple = new Block(100, 100); // initialization of apple. Given coordinates are irrelevant
+            Block apple = new Block(); // initialization of apple. Given coordinates are irrelevant
             string continuePlaying = "y";
 
             while (continuePlaying.ToLower() == "y") // if user responds yes, game will restart
@@ -55,7 +55,7 @@ namespace Snake
                 }
                 Console.Clear();
                 List<Block> snek = SpawnSnake(rand); // initializes and gives snake a random position
-                Game(snek, rand, apple);
+                ExecuteGame(snek, rand, apple);
                 Console.WriteLine("Continue playing? (Y/N) ");
                 continuePlaying = Console.ReadLine();
             }
@@ -102,16 +102,10 @@ namespace Snake
             return snake;
         }
  
-        static void Game(List<Block> snake, Random rand, Block apple)
+        static void ExecuteGame(List<Block> snake, Random rand, Block apple)
         {
             Stopwatch watch = new Stopwatch();
             Directions CurrentDirection = Directions.None;
-            String row = Boarder + "";
-            for (int i = 0; i < BoardX - 2; i++)
-            {
-                row += " ";
-            }
-            row += Boarder;
             // the code below is so that on the opening frame, the user can't run into itself
             if (snake[0].GetX() == snake[1].GetX())
             {
@@ -137,7 +131,7 @@ namespace Snake
                     return;
                 }
                 // initial print of the game
-                PrintGame(snake, apple, row);
+                PrintGame(snake, apple);
                 // ReadKey(true) allows the snake to move every frame under the same direction, without the user having to input every time
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 watch.Start();
@@ -149,7 +143,7 @@ namespace Snake
                         Console.Clear(); // clears the console
                         CurrentDirection = MoveSnake(snake, key, CurrentDirection); // moves the snake, and returns the current direction
                                                                                     // if the snake hits an apple, eats it, and spawns a new one
-                        PrintGame(snake, apple, row); // draws the walls, apple, and snake
+                        PrintGame(snake, apple); // draws the walls, apple, and snake
 
                         if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
                         {
@@ -385,92 +379,40 @@ namespace Snake
         /// </summary>
         /// <param name="snake">the player snake</param>
         /// <param name="apple">randomly genereated apple</param>
-        static void PrintGame(List<Block> snake, Block apple, string row)
-        {
-            // finding the max and min y values of the snake, as a way to tell where the snake is
-            int maxY = 0;
-            int minY = int.MaxValue;
-            foreach(Block b in snake)
+        static void PrintGame(List<Block> snake, Block apple)
+        {  
+            for(int i = 1; i < snake.Count; i++)
             {
-                if (b.GetY() > maxY)
-                    maxY = b.GetY();
-                if (b.GetY() < minY)
-                    minY = b.GetY();
+                Console.SetCursorPosition(snake[i].GetX(), snake[i].GetY());
+                Console.Write(Player);
             }
+            Console.SetCursorPosition(snake[0].GetX(), snake[0].GetY());
+            Console.Write(PlayerHead);
 
+            Console.SetCursorPosition(apple.GetX(), apple.GetY());
+            Console.Write(Apple);
 
-            Block playerHead = snake[0]; // this block is initialized so that we can draw the head seperately
-
-            // we use this flag as a check to see if something was drawn. If it is true, then we will not draw a space on this iteration
-            bool flag = true;
-            // use this boolean to make drawing the head slightly more efficient - don't have to check the head if already drawn
-            bool headFlag = true;
-            // draws the top wall
+            Console.SetCursorPosition(0, 0);
             for (int i = 0; i < BoardX; i++)
             {
-                Console.Write(Boarder);
+                Console.Write(Border);
             }
-            // iterate through the rest of the space minus the bottom wall
+            Console.SetCursorPosition(0, BoardY - 1);
+            for (int i = 0; i < BoardX; i++)
+            {
+                Console.Write(Border);
+            }
+
             for (int i = 1; i < BoardY - 1; i++)
             {
-                // if this row has neither a snake nor an apple, can quickly fill in the row and ignore the rest of the code
-                if ((i < minY || i > maxY) && apple.GetY() != i)
-                {
-                    Console.Write("\n"+row);
-                }
-                else
-                {
-                    // draws left wall for this row
-                    Console.Write("\n" + Boarder);
-                    for (int j = 1; j < BoardX - 1; j++)
-                    {
-                        flag = false;
-                        // if this spot on the board matches the coordinate for the apple, draw apple
-                        if (i * 100 + j == apple.GetCode())
-                        {
-                            Console.Write(Apple);
-                            flag = true;
-                        }
-                        // go through the coordinates for each block and check if there should be a block printed 
-                        foreach (Block b in snake)
-                        {
-                            // check if this coordinate is the player head
-                            if (i * 100 + j == playerHead.GetCode() && b.GetCode() == i * 100 + j && headFlag)
-                            {
-                                Console.Write(PlayerHead);
-                                flag = true;
-                                // wont check head again until next time the board is drawn
-                                headFlag = false;
-                            }
-                            // check if this coordinate is a body part
-                            else if (b.GetCode() == i * 100 + j)
-                            {
-                                Console.Write(Player);
-                                flag = true;
-                            }
-                        }
-                        // if nothing was drawn, draw a body part
-                        if (!flag)
-                        {
-                            Console.Write(" ");
-                        }
-
-
-                    }
-                    // draws right wall for this row
-                    Console.Write(Boarder);
-                }
-                
-                
+                Console.SetCursorPosition(0, i);
+                Console.Write(Border);
+                Console.SetCursorPosition(BoardX - 1, i);
+                Console.Write(Border);
             }
-            // draw the bottom wall
-            Console.Write("\n" + Boarder);
-            for (int i = 0; i < BoardX - 1; i++)
-            {
-                Console.Write(Boarder);
-            }
-            Console.WriteLine("\nScore: " + (snake.Count - 3));
-            Console.WriteLine("Y value: " + snake[0].GetY());
+
+            Console.SetCursorPosition(0, BoardY);
+            Console.WriteLine("Score: " + (snake.Count - 3));
         } 
     }
 }

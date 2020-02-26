@@ -36,6 +36,8 @@ namespace Snake
             this.y = y;
         }
 
+        public Block() { }
+
         /// <summary>
         /// I used a special system to keep track of each point
         /// essentially just a weighted sum of x and y
