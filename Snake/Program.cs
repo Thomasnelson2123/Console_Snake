@@ -122,50 +122,40 @@ namespace Snake
                     CurrentDirection = Directions.Right;
             }
 
+            DrawWalls();
             apple = GenerateApple(apple, rand, snake);
             while (true)
             {        
-                if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
-                {
-                    Console.Clear();
-                    return;
-                }
                 // initial print of the game
                 PrintGame(snake, apple);
                 // ReadKey(true) allows the snake to move every frame under the same direction, without the user having to input every time
                 ConsoleKeyInfo key = Console.ReadKey(true);
-                watch.Start();
                 while (!Console.KeyAvailable)
                 {
+                    
+                    DrawOrDeleteSnake(' ', ' ', snake); // clears the console
+                    CurrentDirection = MoveSnake(snake, key, CurrentDirection); // moves the snake, and returns the current direction
+                                                                                // if the snake hits an apple, eats it, and spawns a new one
+                    PrintGame(snake, apple); // draws the walls, apple, and snake
 
-                    if (watch.ElapsedMilliseconds == speed)
+                    if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
                     {
-                        Console.Clear(); // clears the console
-                        CurrentDirection = MoveSnake(snake, key, CurrentDirection); // moves the snake, and returns the current direction
-                                                                                    // if the snake hits an apple, eats it, and spawns a new one
-                        PrintGame(snake, apple); // draws the walls, apple, and snake
-
-                        if (DetectWallCollision(snake) || DetectSnakeCollision(snake))
-                        {
-                            Console.Clear();
-                            return;
-                        }
-
-                        if (DetectAppleCollision(apple, snake))
-                        {
-                            snake = EatApple(snake, apple);
-                            apple = GenerateApple(apple, rand, snake);
-                        }
-                        watch.Restart();
+                        Console.Clear();
+                        return;
                     }
+
+                    if (DetectAppleCollision(apple, snake))
+                    {
+                        snake = EatApple(snake, apple);
+                        apple = GenerateApple(apple, rand, snake);
+                    }
+                    System.Threading.Thread.Sleep(speed);
 
 
                     // time to wait before next frame
-
-                    
+             
                 }
-                watch.Stop();
-                Console.Clear();
+                DrawOrDeleteSnake(' ', ' ', snake);
             }
             
         }
@@ -297,7 +287,14 @@ namespace Snake
             return CurrentDirection;
         }
 
-
+        /// <summary>
+        /// this method will check if the user presses a key associated with
+        /// a direction that is not the current direction
+        /// if so, changes direction and returns
+        /// </summary>
+        /// <param name="key">the directional key the user inputs</param>
+        /// <param name="CurrentDirection">the direction the snake was previously goingw</param>
+        /// <returns></returns>
         static Directions ChangeDirection(ConsoleKeyInfo key, Directions CurrentDirection)
         {
             // don't want snake to be able to go in opposite direction
@@ -375,34 +372,59 @@ namespace Snake
         }
 
         /// <summary>
-        /// this is the thick method that will print the game.
+        /// this method, called everytime the snake moves, will draw the 
+        /// snake, apple, and score
         /// </summary>
         /// <param name="snake">the player snake</param>
         /// <param name="apple">randomly genereated apple</param>
         static void PrintGame(List<Block> snake, Block apple)
-        {  
-            for(int i = 1; i < snake.Count; i++)
-            {
-                Console.SetCursorPosition(snake[i].GetX(), snake[i].GetY());
-                Console.Write(Player);
-            }
-            Console.SetCursorPosition(snake[0].GetX(), snake[0].GetY());
-            Console.Write(PlayerHead);
-
+        {
+            DrawOrDeleteSnake(Player, PlayerHead, snake);
             Console.SetCursorPosition(apple.GetX(), apple.GetY());
             Console.Write(Apple);
+            Console.SetCursorPosition(0, BoardY);
+            Console.WriteLine("Score: " + (snake.Count - 3));
+        } 
 
+        /// <summary>
+        /// this method, depending on the character parameters, will either draw the snake
+        /// or replace it with empty space
+        /// </summary>
+        /// <param name="c">the character representing the segments of the snake</param>
+        /// <param name="head">the character representing the head of the snake</param>
+        /// <param name="snake">a list of blocks comprising the snake</param>
+        static void DrawOrDeleteSnake(char c, char head, List<Block> snake)
+        {
+            // draws the body
+            for (int i = 1; i < snake.Count; i++)
+            {
+                Console.SetCursorPosition(snake[i].GetX(), snake[i].GetY());
+                Console.Write(c);
+            }
+            // draws the head
+            Console.SetCursorPosition(snake[0].GetX(), snake[0].GetY());
+            Console.Write(head);
+        }
+
+        /// <summary>
+        /// this method will draw the walls of the game
+        /// </summary>
+        static void DrawWalls()
+        {
+            // draws the top wall
             Console.SetCursorPosition(0, 0);
             for (int i = 0; i < BoardX; i++)
             {
                 Console.Write(Border);
             }
+            // draws the bottom wall
             Console.SetCursorPosition(0, BoardY - 1);
             for (int i = 0; i < BoardX; i++)
             {
                 Console.Write(Border);
             }
 
+            // draws the left and right walls
             for (int i = 1; i < BoardY - 1; i++)
             {
                 Console.SetCursorPosition(0, i);
@@ -410,9 +432,6 @@ namespace Snake
                 Console.SetCursorPosition(BoardX - 1, i);
                 Console.Write(Border);
             }
-
-            Console.SetCursorPosition(0, BoardY);
-            Console.WriteLine("Score: " + (snake.Count - 3));
-        } 
+        }
     }
 }
