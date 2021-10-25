@@ -32,10 +32,12 @@ namespace Snake
             Block apple = new Block(); // initialization of apple. Given coordinates are irrelevant
             string continuePlaying = "y";
 
+            ShowInstructions();
+            Console.ReadLine();
             while (continuePlaying.ToLower() == "y") // if user responds yes, game will restart
             {
                 Console.Clear();
-                Console.WriteLine("What speed would you like? (Slow, Medium, Fast, Very Fast) ");
+                Console.WriteLine("What speed would you like? (Crazy-Slow, Slow, Medium, Fast, Very-Fast) ");
                 string response = Console.ReadLine().ToLower();
                 char cResponse = response[0];
                 switch (cResponse)
@@ -44,13 +46,16 @@ namespace Snake
                         speed = 100;
                         break;
                     case 'm':
-                        speed = 50;
+                        speed = 75;
                         break;
                     case 'f':
-                        speed = 25;
+                        speed = 50;
                         break;
                     case 'v':
-                        speed = 10;
+                        speed = 25;
+                        break;
+                    case 'c':
+                        speed = 150;
                         break;
                 }
                 Console.Clear();
@@ -124,10 +129,12 @@ namespace Snake
 
             DrawWalls();
             apple = GenerateApple(apple, rand, snake);
+            // initial print of the game
+            PrintGame(snake, apple);
             while (true)
             {        
-                // initial print of the game
-                PrintGame(snake, apple);
+                
+                
                 // ReadKey(true) allows the snake to move every frame under the same direction, without the user having to input every time
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 while (!Console.KeyAvailable)
@@ -432,6 +439,17 @@ namespace Snake
                 Console.SetCursorPosition(BoardX - 1, i);
                 Console.Write(Border);
             }
+        }
+
+        static void ShowInstructions()
+        {
+            Console.WriteLine("Welcome to my game of snake");
+            Console.WriteLine("\nHow to play: ");
+            Console.WriteLine("\nRun into apples to get points. Each time you do you grow.");
+            Console.WriteLine("If you run into the wall or yourself, the game is over");
+            Console.WriteLine("\nControls: W - Up     A - Left     S - Down     D - Right");
+            Console.WriteLine("\nPress enter to continue");
+
         }
     }
 }
